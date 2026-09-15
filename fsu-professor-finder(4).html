@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FSU Professor Finder</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --garnet: #782F40;
+  --garnet-dark: #4a1a26;
+  --gold: #CEB888;
+  --gold-muted: #a8945c;
+  --cream: #f9f5ee;
+  --text: #1a1008;
+  --text-muted: #6b5a3e;
+  --border: rgba(120,47,64,0.12);
+  --card: #ffffff;
+  --success: #2e7d4f;
+  --error: #c0392b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+header {
+  background: var(--garnet);
+  padding: 32px 24px 24px;
+  border-bottom: 3px solid var(--gold);
+  position: relative;
+  overflow: hidden;
+}
+header::before {
+  content: 'FSU';
+  position: absolute; right: -8px; top: -18px;
+  font-family: 'Crimson Pro', serif;
+  font-size: 130px; font-weight: 700;
+  color: rgba(255,255,255,0.05);
+  pointer-events: none; line-height: 1;
+}
+.header-inner { max-width: 760px; margin: 0 auto; }
+.eyebrow {
+  font-size: 11px; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--gold);
+  margin-bottom: 8px;
+}
+header h1 {
+  font-family: 'Crimson Pro', serif;
+  font-size: clamp(24px, 5vw, 40px);
+  font-weight: 700; color: #fff; line-height: 1.1;
+}
+header p { margin-top: 6px; font-size: 13px; color: rgba(255,255,255,0.55); font-weight: 300; }
+
+/* ── Access gate ── */
+#gate {
+  max-width: 400px; margin: 60px auto 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 32px 28px;
+  box-shadow: 0 4px 24px rgba(120,47,64,0.08);
+  text-align: center;
+}
+#gate h2 {
+  font-family: 'Crimson Pro', serif;
+  font-size: 22px; color: var(--garnet-dark);
+  margin-bottom: 8px;
+}
+#gate p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+#gate input {
+  width: 100%; padding: 11px 14px;
+  border: 1px solid var(--border); border-radius: 6px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px;
+  text-align: center; letter-spacing: 4px;
+  background: #faf8f4; color: var(--text);
+  outline: none; margin-bottom: 12px;
+  transition: border-color 0.2s;
+}
+#gate input:focus { border-color: var(--garnet); }
+#gate-error { font-size: 12px; color: var(--error); margin-bottom: 10px; min-height: 16px; }
+
+/* ── Main app ── */
+#app { display: none; max-width: 760px; margin: 0 auto; padding: 28px 20px 60px; }
+
+/* Add course row */
+.add-row {
+  display: flex; gap: 10px; align-items: center;
+  margin-bottom: 24px; flex-wrap: wrap;
+}
+.add-row input {
+  flex: 1; min-width: 160px;
+  padding: 10px 14px;
+  border: 1px solid var(--border); border-radius: 6px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px;
+  text-transform: uppercase; letter-spacing: 1px;
+  background: #fff; color: var(--text);
+  outline: none; transition: border-color 0.2s;
+}
+.add-row input:focus { border-color: var(--garnet); }
+.add-row input::placeholder { text-transform: none; letter-spacing: 0; color: #bbb; }
+
+/* Buttons */
+.btn {
+  padding: 10px 20px; border-radius: 6px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px;
+  font-weight: 500; cursor: pointer;
+  transition: all 0.15s; border: none; white-space: nowrap;
+}
+.btn:active:not(:disabled) { transform: scale(0.97); }
+.btn-garnet { background: var(--garnet); color: #fff; }
+.btn-garnet:hover:not(:disabled) { background: var(--garnet-dark); }
+.btn-garnet:disabled { background: #ccc; cursor: not-allowed; }
+.btn-gold { background: var(--gold); color: var(--garnet-dark); font-weight: 600; }
+.btn-gold:hover:not(:disabled) { background: #ddd0a8; }
+.btn-gold:disabled { background: #ddd; color: #999; cursor: not-allowed; }
+.btn-ghost {
+  background: transparent; color: var(--garnet);
+  border: 1px solid rgba(120,47,64,0.25);
+}
+.btn-ghost:hover:not(:disabled) { background: rgba(120,47,64,0.05); }
+.btn-ghost:disabled { color: #bbb; border-color: #ddd; cursor: not-allowed; }
+.btn-sm { padding: 6px 14px; font-size: 12px; }
+.btn-icon {
+  padding: 6px 10px; background: transparent; border: none;
+  color: var(--text-muted); cursor: pointer; font-size: 16px;
+  border-radius: 4px; transition: color 0.15s, background 0.15s;
+}
+.btn-icon:hover { color: var(--error); background: rgba(192,57,43,0.07); }
+
+.toolbar {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
+}
+.toolbar-left { font-family: 'Crimson Pro', serif; font-size: 20px; color: var(--garnet-dark); }
+
+/* Course cards */
+.course-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px; margin-bottom: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 8px rgba(120,47,64,0.04);
+  transition: box-shadow 0.2s;
+}
+.course-card:hover { box-shadow: 0 3px 16px rgba(120,47,64,0.09); }
+
+.course-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(120,47,64,0.04);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap; gap: 8px;
+}
+.course-left { display: flex; align-items: center; gap: 10px; }
+.badge {
+  background: var(--garnet); color: var(--gold);
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 1px; padding: 3px 9px; border-radius: 4px;
+}
+.course-name-text { font-size: 14px; font-weight: 500; color: var(--garnet-dark); }
+.course-actions { display: flex; gap: 6px; align-items: center; }
+
+.course-body { padding: 14px 16px; }
+.course-note {
+  font-size: 13px; color: var(--text-muted); font-style: italic;
+  margin-bottom: 12px; padding-left: 10px;
+  border-left: 2px solid var(--gold-muted);
+}
+
+/* Prof entries */
+.prof-list { display: flex; flex-direction: column; gap: 10px; }
+.prof-entry {
+  border: 1px solid rgba(120,47,64,0.08);
+  border-radius: 8px; padding: 12px 14px; background: #fdfcf9;
+}
+.prof-top {
+  display: flex; justify-content: space-between;
+  align-items: flex-start; flex-wrap: wrap; gap: 6px;
+  margin-bottom: 6px;
+}
+.prof-name {
+  font-family: 'Crimson Pro', serif;
+  font-size: 17px; font-weight: 600; color: var(--garnet-dark);
+}
+.prof-stats { display: flex; gap: 12px; }
+.stat { display: flex; flex-direction: column; align-items: center; min-width: 46px; }
+.stat-val { font-size: 15px; font-weight: 600; line-height: 1; }
+.stat-label { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+.hi { color: #2e7d4f; } .mid { color: #9a6800; } .lo { color: #c0392b; } .na { color: #bbb; }
+.prof-tags { display: flex; flex-wrap: wrap; gap: 5px; margin: 6px 0; }
+.tag {
+  font-size: 11px; padding: 2px 8px; border-radius: 20px;
+  background: rgba(206,184,136,0.15); color: var(--gold-muted);
+  border: 1px solid rgba(206,184,136,0.28);
+}
+.prof-summary { font-size: 13px; color: var(--text-muted); line-height: 1.55; }
+.prof-tip { font-size: 12px; color: var(--success); margin-top: 5px; font-style: italic; }
+
+/* States */
+.state { padding: 18px 0; font-size: 13px; color: var(--text-muted); }
+.state-loading { display: flex; align-items: center; gap: 8px; }
+.spinner {
+  width: 14px; height: 14px; flex-shrink: 0;
+  border: 2px solid rgba(120,47,64,0.15);
+  border-top-color: var(--garnet);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.state-error { color: var(--error); }
+.state-idle { font-style: italic; }
+
+footer {
+  text-align: center; font-size: 11px;
+  color: var(--text-muted); margin-top: 28px;
+  padding-top: 18px; border-top: 1px solid var(--border);
+}
+footer a { color: var(--garnet); text-decoration: none; }
+
+@media (max-width: 480px) {
+  .add-row { flex-direction: column; align-items: stretch; }
+  .add-row input { min-width: unset; }
+  .toolbar { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="eyebrow">Florida State University</div>
+    <h1>Professor Finder</h1>
+    <p>Add courses, search for professors and ratings</p>
+  </div>
+</header>
+
+<!-- Access Gate -->
+<div id="gate">
+  <h2>Enter access code</h2>
+  <p>This tool is shared privately. Enter the code to continue.</p>
+  <div id="gate-error"></div>
+  <input type="password" id="accessInput" placeholder="Access code" onkeydown="if(event.key==='Enter')checkAccess()" />
+  <button class="btn btn-garnet" style="width:100%" onclick="checkAccess()">Continue</button>
+</div>
+
+<!-- Main App -->
+<div id="app">
+  <div class="add-row">
+    <input type="text" id="courseInput" placeholder="Add a course code, e.g. MAC1105"
+      maxlength="10" onkeydown="if(event.key==='Enter')addCourse()" />
+    <button class="btn btn-garnet" onclick="addCourse()">Add Course</button>
+  </div>
+
+  <div class="toolbar">
+    <span class="toolbar-left" id="courseCount">0 courses</span>
+    <button class="btn btn-gold" id="searchAllBtn" onclick="searchAll()">Search All</button>
+  </div>
+
+  <div id="courseList"></div>
+
+  <footer>
+    Ratings sourced via web search &middot; Verify at
+    <a href="https://www.ratemyprofessors.com" target="_blank">RateMyProfessors.com</a>
+    and <a href="https://registrar.fsu.edu" target="_blank">FSU course schedule</a>
+  </footer>
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────
+// Set these two values before deploying to GitHub Pages:
+const ACCESS_CODE   = "fsu_girl";          // short password users enter
+const PROXY_URL     = "https://worker-wild-river-0ae2.cbeasley701.workers.dev/"; // Cloudflare Worker URL
+// ─────────────────────────────────────────────────────────
+
+let courses = [];   // [{code, name}]
+let state   = {};   // {code: {loading, data, error}}
+
+// ── Access gate ──────────────────────────────────────────
+function checkAccess() {
+  const val = document.getElementById('accessInput').value.trim();
+  if (val === ACCESS_CODE) {
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('app').style.display  = 'block';
+    sessionStorage.setItem('fsu_auth', '1');
+  } else {
+    document.getElementById('gate-error').textContent = 'Incorrect code. Try again.';
+  }
+}
+
+// ── Course management ─────────────────────────────────────
+function addCourse() {
+  const raw  = document.getElementById('courseInput').value.trim().toUpperCase();
+  const code = raw.replace(/\s+/g,'');
+  if (!code) return;
+  if (courses.find(c => c.code === code)) {
+    alert(`${code} is already in the list.`); return;
+  }
+  courses.push({ code, name: '' });
+  state[code] = null;
+  document.getElementById('courseInput').value = '';
+  render();
+}
+
+function removeCourse(code) {
+  courses = courses.filter(c => c.code !== code);
+  delete state[code];
+  render();
+}
+
+// ── Render ────────────────────────────────────────────────
+function rcls(r) {
+  const n = parseFloat(r);
+  if (isNaN(n)) return 'na';
+  return n >= 4 ? 'hi' : n >= 3 ? 'mid' : 'lo';
+}
+
+function profHTML(p) {
+  const wta = p.wouldTakeAgain && p.wouldTakeAgain !== 'N/A'
+    ? `<div class="stat"><span class="stat-val ${rcls(p.wouldTakeAgain)}">${p.wouldTakeAgain}</span><span class="stat-label">Retake</span></div>` : '';
+  const tags = (p.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('');
+  const tip  = p.tip ? `<div class="prof-tip">💡 ${p.tip}</div>` : '';
+  return `<div class="prof-entry">
+    <div class="prof-top">
+      <div class="prof-name">${p.name}</div>
+      <div class="prof-stats">
+        <div class="stat"><span class="stat-val ${rcls(p.rating)}">${p.rating||'N/A'}</span><span class="stat-label">Rating</span></div>
+        <div class="stat"><span class="stat-val ${rcls(p.difficulty)}">${p.difficulty||'N/A'}</span><span class="stat-label">Difficulty</span></div>
+        ${wta}
+      </div>
+    </div>
+    ${tags ? `<div class="prof-tags">${tags}</div>` : ''}
+    <div class="prof-summary">${p.summary||''}</div>${tip}
+  </div>`;
+}
+
+function bodyHTML(code) {
+  const s = state[code];
+  if (!s)             return `<div class="state state-idle">Click Search to find professors.</div>`;
+  if (s.loading)      return `<div class="state state-loading"><div class="spinner"></div>Searching RateMyProfessors and FSU listings…</div>`;
+  if (s.error)        return `<div class="state state-error">⚠ ${s.error}</div>`;
+  const d = s.data;
+  const note  = d.courseNote ? `<div class="course-note">${d.courseNote}</div>` : '';
+  const profs = (d.professors||[]).map(profHTML).join('');
+  return note + (profs ? `<div class="prof-list">${profs}</div>` : `<div class="state state-idle">No professor data found.</div>`);
+}
+
+function render() {
+  const active = courses.filter(c => !state[c.code] || !state[c.code].loading);
+  const anyLoading = courses.some(c => state[c.code] && state[c.code].loading);
+
+  document.getElementById('courseCount').textContent =
+    courses.length === 1 ? '1 course' : `${courses.length} courses`;
+  document.getElementById('searchAllBtn').disabled = anyLoading || courses.length === 0;
+
+  document.getElementById('courseList').innerHTML = courses.map(c => {
+    const s = state[c.code];
+    const loading = s && s.loading;
+    const label = loading ? 'Searching…' : (s && s.data ? 'Refresh' : 'Search');
+    const name  = (s && s.data && s.data.courseName) ? s.data.courseName : c.name || '';
+    return `<div class="course-card">
+      <div class="course-header">
+        <div class="course-left">
+          <span class="badge">${c.code}</span>
+          ${name ? `<span class="course-name-text">${name}</span>` : ''}
+        </div>
+        <div class="course-actions">
+          <button class="btn btn-ghost btn-sm" ${loading?'disabled':''} onclick="searchCourse('${c.code}')">${label}</button>
+          <button class="btn-icon" title="Remove" onclick="removeCourse('${c.code}')">✕</button>
+        </div>
+      </div>
+      <div class="course-body">${bodyHTML(c.code)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── API call (via proxy) ──────────────────────────────────
+async function searchCourse(code) {
+  state[code] = { loading: true };
+  render();
+  try {
+    const res = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ course: code })
+    });
+    if (!res.ok) throw new Error(`Proxy error ${res.status}`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    // Fill in course name if we got it back
+    const idx = courses.findIndex(c => c.code === code);
+    if (idx !== -1 && data.courseName) courses[idx].name = data.courseName;
+    state[code] = { data };
+  } catch(e) {
+    state[code] = { error: e.message || 'Search failed. Please try again.' };
+  }
+  render();
+}
+
+async function searchAll() {
+  document.getElementById('searchAllBtn').disabled = true;
+  await Promise.all(courses.map(c => searchCourse(c.code)));
+  render();
+}
+
+// ── Init ──────────────────────────────────────────────────
+if (sessionStorage.getItem('fsu_auth') === '1') {
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('app').style.display  = 'block';
+}
+render();
+</script>
+</body>
+</html>
